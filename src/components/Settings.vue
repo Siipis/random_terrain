@@ -5,7 +5,7 @@
       <select id="terrainSelect" @change="$store.commit('terrain', $event.target.value)">
         <option v-for="option in terrains" :key="option"
                 :value="option" :selected="option === terrain">
-          {{ option }}
+          {{ option | capitalize }}
         </option>
       </select>
     </div>
@@ -18,6 +18,11 @@
           {{ option }}
         </option>
       </select>
+    </div>
+
+    <div>
+      <button @click="$store.dispatch('expand')">Expand</button>
+      <button @click="$store.commit('reset')">Reset</button>
     </div>
   </div>
 </template>
@@ -32,7 +37,7 @@ export default {
     },
 
     terrains() {
-      return this.$store.state.terrains
+      return Object.keys(this.$store.state.terrains)
     },
 
     scale() {
@@ -42,6 +47,14 @@ export default {
     scales() {
       return this.$store.state.scales
     },
+  },
+
+  filters: {
+    capitalize: function (value) {
+      if (!value) return ''
+      value = value.toString()
+      return value.charAt(0).toUpperCase() + value.slice(1)
+    }
   }
 }
 </script>

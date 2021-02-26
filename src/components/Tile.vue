@@ -1,14 +1,15 @@
 <template>
-    <div class="tile" :class="type" :style="style"
-         @click="generate"
-         v-if="terrain == null">
-      +
-    </div>
+  <div class="tile" :class="type" :style="style"
+       @click="generate"
+       v-if="terrain == null">
+    +
+  </div>
 
-    <div class="tile" :class="type" :style="style"
-         v-else>
-      {{ terrain }}
-    </div>
+  <div class="tile" :class="type" :style="style"
+       @click.right.prevent="reset"
+       v-else>
+    &nbsp;
+  </div>
 </template>
 
 <script>
@@ -18,44 +19,12 @@ export default {
 
   methods: {
     generate() {
-      this.$store.commit('tile', {...this.tile, terrain: 'trees' })
+      this.$store.dispatch('randomize', this.$props.tile)
+    },
 
-      let above = this.$store.getters.tileAt(this.x, this.y - 1)
-      if (!above) {
-        this.$store.commit('addTile', {
-          x: this.x,
-          y: this.y - 1,
-          terrain: null
-        })
-      }
-
-      let below = this.$store.getters.tileAt(this.x, this.y + 1)
-      if (!below) {
-        this.$store.commit('addTile', {
-          x: this.x,
-          y: this.y + 1,
-          terrain: null
-        })
-      }
-
-      let left = this.$store.getters.tileAt(this.x - 1, this.y)
-      if (!left) {
-        this.$store.commit('addTile', {
-          x: this.x - 1,
-          y: this.y,
-          terrain: null
-        })
-      }
-
-      let right = this.$store.getters.tileAt(this.x + 1, this.y)
-      if (!right) {
-        this.$store.commit('addTile', {
-          x: this.x + 1,
-          y: this.y,
-          terrain: null
-        })
-      }
-    }
+    reset() {
+      this.$store.commit('tile', {...this.tile, terrain: null})
+    },
   },
 
   computed: {
@@ -72,7 +41,7 @@ export default {
     },
 
     type() {
-      return this.terrain !== null ? 'terrain' : 'button'
+      return this.terrain !== null ? ['terrain', this.terrain] : ['button']
     },
 
     style() {
@@ -89,15 +58,16 @@ export default {
 
     scale() {
       return this.$store.state.config.scale
-    }
+    },
   }
 }
 </script>
 
 <style scoped lang="scss">
+@import "../assets/scss/terrains";
+
 .tile {
   border: 1px solid #ccc;
-  background: white;
   position: absolute;
   cursor: pointer;
   transition: all .3s, font-size 0ms;
@@ -105,11 +75,7 @@ export default {
   &.button {
     text-align: center;
     font-size: 2em;
-  }
-
-  &.terrain {
-    text-align: center;
-    font-size: 12px;
+    background: white;
   }
 }
 </style>

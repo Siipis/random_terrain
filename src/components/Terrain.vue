@@ -1,6 +1,7 @@
 <template>
-  <div id="terrain" @wheel.prevent="zoom">
-    <Tile v-for="(tile, index) in tiles" :tile="tile" :key="index" />
+  <div id="terrain" tabindex="1"
+       @wheel.prevent="zoom" @keypress.prevent="pane">
+    <Tile v-for="(tile, index) in tiles" :tile="tile" :key="index"/>
   </div>
 </template>
 
@@ -18,6 +19,30 @@ export default {
       } else {
         this.$store.commit('zoomOut')
       }
+    },
+
+    pane($event) {
+      const scrollBy = 100
+      const scroll = {
+        top: this.$el.scrollTop,
+        left: this.$el.scrollLeft,
+        behavior: 'smooth'
+      }
+
+      switch ($event.key) {
+        case 'w':
+          this.$el.scroll({...scroll, top: scroll.top - scrollBy})
+          break
+        case 's':
+          this.$el.scroll({...scroll, top: scroll.top + scrollBy})
+          break
+        case 'd':
+          this.$el.scroll({...scroll, left: scroll.left + scrollBy})
+          break
+        case 'a':
+          this.$el.scroll({...scroll, left: scroll.left - scrollBy})
+          break
+      }
     }
   },
 
@@ -34,7 +59,6 @@ export default {
   width: 100%;
   height: 100%;
   overflow: auto;
-
   position: relative;
 }
 </style>

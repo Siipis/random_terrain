@@ -1,7 +1,7 @@
 <template>
   <div id="app">
-    <Settings />
-    <Terrain />
+    <Settings/>
+    <Terrain/>
   </div>
 </template>
 
