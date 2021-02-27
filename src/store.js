@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
-import forest from "@/terrains/forest";
+import List from "@/classes/List";
+import {terrains, limits} from '@/terrains/index'
 
 Vue.use(Vuex)
 
@@ -11,19 +12,58 @@ const defaultTiles = [
 export default new Vuex.Store({
     state: {
         config: {
-            terrain: 'forest',
+            terrain: Object.keys(terrains)[0],
             scale: 50,
         },
-        scales: [50, 75, 100, 150],
-        terrains: {
-            forest
-        },
-        tiles: [...defaultTiles]
+        scales: [25, 50, 75, 100, 150],
+        tiles: [...defaultTiles],
+        terrains
     },
 
     getters: {
         tileAt: (state) => (x, y) => {
             return state.tiles.find(tile => tile.x === x && tile.y === y)
+        },
+
+        terrainAt: (state, getters) => (x, y) => {
+            const tile = getters.tileAt(x, y)
+            if (tile) {
+                return tile.terrain
+            }
+            return null
+        },
+
+        countTerrain: (state, getters) => (terrain, direction, {x, y}) => {
+            if (terrain === null) {
+                return 0
+            }
+
+            let count = 0
+            for (let tiles = 1; tiles <= state.tiles.length; tiles++) {
+                switch (direction) {
+                    case 'up':
+                        y--
+                        break
+                    case 'down':
+                        y++
+                        break
+                    case 'left':
+                        x--
+                        break
+                    case 'right':
+                        x++
+                        break
+                    default:
+                        throw new TypeError()
+                }
+
+                if (getters.terrainAt(x, y) !== terrain) {
+                    break
+                }
+
+                count++
+            }
+            return count
         },
 
         weightsAt: (state, getters) => (x, y) => {
@@ -39,15 +79,39 @@ export default new Vuex.Store({
             return {}
         },
 
-        tileWeights: (state, getters) => (tile) => {
+        tileWeights: (state, getters) => ({x, y}) => {
             const weights = new List()
 
-            weights.add(getters.weightsAt(tile.x, tile.y - 1))
-            weights.add(getters.weightsAt(tile.x, tile.y + 1))
-            weights.add(getters.weightsAt(tile.x + 1, tile.y))
-            weights.add(getters.weightsAt(tile.x - 1, tile.y))
+            weights.add(getters.weightsAt(x, y - 1))
+            weights.add(getters.weightsAt(x, y + 1))
+            weights.add(getters.weightsAt(x + 1, y))
+            weights.add(getters.weightsAt(x - 1, y))
 
-            return weights
+            const lim = limits[state.config.terrain]
+
+            return weights.filter((terrain) => {
+                if (lim[terrain]) {
+                    const start = {x, y}
+                    const count = [
+                        getters.countTerrain(terrain, 'up', start),
+                        getters.countTerrain(terrain, 'down', start),
+                        getters.countTerrain(terrain, 'left', start),
+                        getters.countTerrain(terrain, 'right', start)
+                    ].sort().reverse()
+
+                    const limitA = lim[terrain][0]
+                    const limitB = lim[terrain][1]
+
+                    if (count[0] >= limitA) {
+                        if (limitB !== null) {
+                            return count[0] < limitB
+                        }
+
+                        return count[1] < limitA
+                    }
+                }
+                return true
+            })
         },
 
         randomize: (state, getters) => (tile) => {
@@ -141,27 +205,3 @@ export default new Vuex.Store({
         }
     }
 })
-
-class List extends Object {
-    add(value) {
-        Object.keys(value).forEach(key => {
-            if (this[key] === undefined) {
-                this[key] = value[key]
-            } else {
-                this[key] += value[key]
-            }
-        })
-    }
-
-    values() {
-        return Object.values(this)
-    }
-
-    keys() {
-        return Object.keys(this)
-    }
-
-    get length() {
-        return this.keys().length
-    }
-}
