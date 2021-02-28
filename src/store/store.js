@@ -22,6 +22,25 @@ export default new Vuex.Store({
         tileAt: (state) => (x, y) => {
             return state.tiles.find(tile => tile.x === x && tile.y === y)
         },
+
+        size: state => {
+            let minY = Infinity
+            let maxY = -Infinity
+            let minX = Infinity
+            let maxX = -Infinity
+
+            state.tiles.forEach(({x, y}) => {
+                minY = Math.min(minY, y)
+                maxY = Math.max(maxY, y)
+                minX = Math.min(minX, x)
+                maxX = Math.max(maxX, x)
+            })
+
+            return {
+                width: Math.abs(minX) + Math.abs(maxX) + 1,
+                height: Math.abs(minY) + Math.abs(maxY) + 1,
+            }
+        },
     },
 
     actions: {

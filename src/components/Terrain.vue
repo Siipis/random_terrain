@@ -1,12 +1,15 @@
 <template>
   <div id="terrain" tabindex="1"
        @wheel.prevent="zoom" @keypress.prevent="pane">
-    <Tile v-for="(tile, index) in tiles" :tile="tile" :key="index"/>
+    <div id="terrain--container" :style="containerStyle">
+      <Tile v-for="(tile, index) in tiles" :tile="tile" :key="index"/>
+    </div>
   </div>
 </template>
 
 <script>
 import Tile from "@/components/Tile";
+import {mapState} from "vuex";
 
 export default {
   name: "Terrain",
@@ -47,9 +50,23 @@ export default {
   },
 
   computed: {
-    tiles() {
-      return this.$store.state.tiles
-    }
+    containerStyle() {
+      const size = this.$store.getters.size
+      const padding = 100
+      const width = size.width * this.scale + padding
+      const height = size.height * this.scale + padding
+
+      return {
+        width: `${width}px`,
+        height: `${height}px`,
+      }
+    },
+
+    ...mapState({
+      tiles: state => state.tiles,
+
+      scale: state => state.config.scale
+    })
   }
 }
 </script>
@@ -58,7 +75,13 @@ export default {
 #terrain {
   width: 100%;
   height: 100%;
-  overflow: auto;
+  overflow: scroll;
+}
+
+#terrain--container {
+  margin: auto;
   position: relative;
+  min-height: 100%;
+  min-width: 100%;
 }
 </style>
