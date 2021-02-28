@@ -28,25 +28,21 @@
 </template>
 
 <script>
+import {mapState} from 'vuex'
+
 export default {
   name: "Settings",
 
   computed: {
-    terrain() {
-      return this.$store.state.config.terrain
-    },
+    ...mapState({
+      terrain: state => state.terrain.current,
 
-    terrains() {
-      return Object.keys(this.$store.state.terrains)
-    },
+      terrains: state => Object.keys(state.terrain.list),
 
-    scale() {
-      return this.$store.state.config.scale
-    },
+      scale: state => state.config.scale,
 
-    scales() {
-      return this.$store.state.scales
-    },
+      scales: state => state.scales,
+    })
   },
 
   filters: {
