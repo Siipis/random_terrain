@@ -22,6 +22,7 @@
 
     <div>
       <button @click="$store.dispatch('expand')">Expand</button>
+      <button @click="$store.dispatch('expand', {random: true})">Random</button>
       <button @click="$store.commit('reset')">Reset</button>
     </div>
   </div>

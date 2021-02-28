@@ -82,12 +82,22 @@ export default {
             dispatch('extend', {...tile, x: tile.x - 1})
         },
 
-        expand({dispatch, rootState}) {
+        expand({dispatch, rootState}, options) {
             rootState.tiles.forEach(tile => {
+                if (rootState.tiles.length > 1 && options && options.random) {
+                    const ratio = options.ratio || 0.3
+                    const random = Math.random()
+
+                    if (random < ratio) {
+                        return
+                    }
+                }
+
                 if (tile.terrain === null) {
                     dispatch('randomize', tile)
                 }
             })
+
         },
     }
 }
