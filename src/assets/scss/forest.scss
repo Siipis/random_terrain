@@ -1,11 +1,122 @@
+@import "mixins";
+
+$grass: #6ab336;
+$shallowWater: #67e3ee;
+$deepWater: #41cbe1;
+$shallowBorder: 10px double rgba($shallowWater, .5);
+
 .trees {
-  background: forestgreen;
+  background: $grass;
+
+  &:before {
+    @include size(0.65);
+    border-radius: 50%;
+    background: #1c861c;
+    border: 0.1em solid rgba(darkgreen, .3);
+  }
 }
 
 .denseTrees {
-  background: darkgreen;
+  background: $grass;
+
+  &:before {
+    @include size(0.90);
+    border-radius: 50%;
+    background: #1b731b;
+    border: 0.2em solid rgba(darkgreen, .3);
+  }
 }
 
-.stream {
-  background: aqua;
+.rock {
+  background: $grass;
+
+  &:before {
+    @include size(0.7);
+    border-radius: 30%;
+    background: #4e4843;
+    border: 0.3em solid #433f3b;
+    transform: rotate(45deg);
+  }
+}
+
+.shallowWater {
+  @include water;
+  background: $grass;
+
+  &:before {
+    @include size(1);
+    background: $shallowWater;
+  }
+
+  &[class*="--top"][class*="--bottom"][class*="--left"][class*="--right"] {
+    &:not([class*="Water--top"]):not([class*="Water--bottom"]):not([class*="Water--left"]):not([class*="Water--right"]) {
+      &:before {
+        background: #1ba085;
+        border: 0.25em double $grass;
+        border-radius: 30%;
+      }
+    }
+  }
+}
+
+.deepWater {
+  @include water;
+  background: $grass;
+
+  &:before {
+    @include size(1);
+    background: $deepWater;
+  }
+
+  &.shallowWater--top {
+    &:before {
+      border-top: $shallowBorder !important;
+    }
+  }
+
+  &.shallowWater--bottom {
+    &:before {
+      border-bottom: $shallowBorder !important;
+    }
+  }
+
+  &.shallowWater--left {
+    &:before {
+      border-left: $shallowBorder !important;
+    }
+  }
+
+  &.shallowWater--right {
+    &:before {
+      border-right: $shallowBorder !important;
+    }
+  }
+
+  &.shallowWater--top.shallowWater--left {
+    background: $shallowWater;
+    &:before {
+      border-top-left-radius: 100%;
+    }
+  }
+
+  &.shallowWater--top.shallowWater--right {
+    background: $shallowWater;
+    &:before {
+      border-top-right-radius: 100%;
+    }
+  }
+
+  &.shallowWater--bottom.shallowWater--left {
+    background: $shallowWater;
+    &:before {
+      border-bottom-left-radius: 100%;
+    }
+  }
+
+  &.shallowWater--bottom.shallowWater--right {
+    background: $shallowWater;
+    &:before {
+      border-bottom-right-radius: 100%;
+    }
+  }
 }

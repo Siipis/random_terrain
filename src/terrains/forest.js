@@ -7,19 +7,26 @@
  */
 export const forest = {
     trees: {
-        trees: 30,
+        trees: 50,
         denseTrees: 10,
-        stream: 1,
+        rock: 2,
+        shallowWater: 2,
     },
 
     denseTrees: {
-        trees: 5,
-        denseTrees: 20,
+        trees: 10,
+        denseTrees: 30,
     },
 
-    stream: {
-        stream: 50,
+    shallowWater: {
+        shallowWater: 50,
         trees: 3,
+        deepWater: 1,
+    },
+
+    deepWater: {
+        deepWater: 100,
+        trees: 10,
     },
 }
 
@@ -32,6 +39,6 @@ export const forest = {
  * @type Object
  */
 export const forestLimit = {
-    stream: [1, null],
+    shallowWater: [1, null],
     // denseTrees: [3, 3],
 }
