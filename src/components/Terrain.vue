@@ -2,7 +2,7 @@
   <div id="terrain" tabindex="1"
        @wheel.prevent="zoom" @keypress.prevent="pane">
     <transition-group name="terrain" tag="div" id="terrain--container" :style="containerStyle">
-      <Tile v-for="(tile, key) in tiles" :tile="tile" :key="key"/>
+      <Tile v-for="tile in tiles" :tile="tile" :key="`${tile.x}:${tile.y}`"/>
     </transition-group>
   </div>
 </template>
