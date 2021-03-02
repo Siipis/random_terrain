@@ -93,28 +93,28 @@ $shallowBorder: 10px double rgba($shallowWater, .5);
   }
 
   &.shallowWater--top.shallowWater--left {
-    background: $shallowWater;
+    background: linear-gradient(to bottom right, $shallowWater 50%, $grass 50%);
     &:before {
       border-top-left-radius: 100%;
     }
   }
 
   &.shallowWater--top.shallowWater--right {
-    background: $shallowWater;
+    background: linear-gradient(to bottom left, $shallowWater 50%, $grass 50%);
     &:before {
       border-top-right-radius: 100%;
     }
   }
 
   &.shallowWater--bottom.shallowWater--left {
-    background: $shallowWater;
+    background: linear-gradient(to top right, $shallowWater 50%, $grass 50%);
     &:before {
       border-bottom-left-radius: 100%;
     }
   }
 
   &.shallowWater--bottom.shallowWater--right {
-    background: $shallowWater;
+    background: linear-gradient(to top left, $shallowWater 50%, $grass 50%);
     &:before {
       border-bottom-right-radius: 100%;
     }
