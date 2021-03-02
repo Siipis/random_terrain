@@ -22,7 +22,8 @@ export default {
             }
 
             let count = 0
-            for (let tiles = 1; tiles <= rootState.tiles.length; tiles++) {
+            const maxSize = Math.max(rootGetters.size.width, rootGetters.size.height)
+            for (let tiles = 1; tiles <= maxSize; tiles++) {
                 switch (direction) {
                     case 'up':
                         y--

@@ -21,11 +21,11 @@
     </div>
 
     <div class="form--control buttons">
-      <button @click="$store.dispatch('expand')">
+      <button @click="$store.dispatch('expand')" :disabled="working">
         <expand-icon />
         Expand
       </button>
-      <button @click="$store.dispatch('expand', {random: true})">
+      <button @click="$store.dispatch('expand', {random: true})" :disabled="working">
         <random-icon />
         Random
       </button>
@@ -54,6 +54,8 @@ export default {
 
   computed: {
     ...mapState({
+      working: state => state.working,
+
       terrain: state => state.terrain.current,
 
       terrains: state => Object.keys(state.terrain.list),
@@ -120,8 +122,12 @@ button {
   margin: 0.5em 0;
   transition: all 0.3s;
 
-  &:hover {
-    background: #333;
+  &:disabled {
+    background: #777;
+  }
+
+  &:not(:disabled):hover {
+    background: #111;
   }
 
   & + button {

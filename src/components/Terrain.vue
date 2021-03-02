@@ -1,9 +1,9 @@
 <template>
   <div id="terrain" tabindex="1"
        @wheel.prevent="zoom" @keypress.prevent="pane">
-    <div id="terrain--container" :style="containerStyle">
-      <Tile v-for="(tile, index) in tiles" :tile="tile" :key="index"/>
-    </div>
+    <transition-group name="terrain" tag="div" id="terrain--container" :style="containerStyle">
+      <Tile v-for="(tile, key) in tiles" :tile="tile" :key="key"/>
+    </transition-group>
   </div>
 </template>
 
@@ -14,6 +14,14 @@ import {mapState} from "vuex";
 export default {
   name: "Terrain",
   components: {Tile},
+
+  beforeUpdate() {
+    this.$store.commit('startWorking')
+  },
+
+  updated() {
+    this.$store.commit('stopWorking')
+  },
 
   methods: {
     zoom($event) {

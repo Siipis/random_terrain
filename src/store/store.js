@@ -5,40 +5,34 @@ import randomizer from "@/store/modules/randomizer";
 
 Vue.use(Vuex)
 
-const defaultTiles = [
-    {x: 0, y: 0, terrain: null}
-]
+const defaultTiles = {
+    ['0:0']: {x: 0, y: 0, terrain: null}
+}
 
 export default new Vuex.Store({
     state: {
+        working: false,
         config: {
             scale: 50,
         },
         scales: [25, 50, 75, 100, 150],
-        tiles: [...defaultTiles]
+        tiles: {...defaultTiles},
+        bounds: {
+            x: {min: 0, max: 0},
+            y: {min: 0, max: 0}
+        }
     },
 
     getters: {
         tileAt: (state) => (x, y) => {
-            return state.tiles.find(tile => tile.x === x && tile.y === y)
+            const key = `${x}:${y}`
+            return state.tiles[key]
         },
 
         size: state => {
-            let minY = Infinity
-            let maxY = -Infinity
-            let minX = Infinity
-            let maxX = -Infinity
-
-            state.tiles.forEach(({x, y}) => {
-                minY = Math.min(minY, y)
-                maxY = Math.max(maxY, y)
-                minX = Math.min(minX, x)
-                maxX = Math.max(maxX, x)
-            })
-
             return {
-                width: Math.abs(minX) + Math.abs(maxX) + 1,
-                height: Math.abs(minY) + Math.abs(maxY) + 1,
+                width: Math.abs(state.bounds.x.min) + Math.abs(state.bounds.x.max) + 1,
+                height: Math.abs(state.bounds.y.min) + Math.abs(state.bounds.y.max) + 1,
             }
         },
     },
@@ -46,7 +40,7 @@ export default new Vuex.Store({
     actions: {
         extend({commit, getters}, {x, y}) {
             if (!getters.tileAt(x, y)) {
-                commit('addTile', {
+                commit('tile', {
                     x, y, terrain: null
                 })
             }
@@ -54,6 +48,14 @@ export default new Vuex.Store({
     },
 
     mutations: {
+        startWorking(state) {
+            state.working = true
+        },
+
+        stopWorking(state) {
+            state.working = false
+        },
+
         scale(state, scale) {
             state.config.scale = scale
         },
@@ -75,20 +77,28 @@ export default new Vuex.Store({
         },
 
         tile(state, tile) {
-            state.tiles = state.tiles.map(t => {
-                if (t.x === tile.x && t.y === tile.y) {
-                    return tile
-                }
-                return t
-            })
-        },
+            Object.freeze(tile)
 
-        addTile(state, tile) {
-            state.tiles = state.tiles.concat(tile)
+            const key = `${tile.x}:${tile.y}`
+            state.tiles = {...state.tiles, [key]: tile}
+            state.bounds = {
+                x: {
+                    min: Math.min(state.bounds.x.min, tile.x),
+                    max: Math.max(state.bounds.x.max, tile.x),
+                },
+                y: {
+                    min: Math.min(state.bounds.y.min, tile.y),
+                    max: Math.max(state.bounds.y.max, tile.y),
+                }
+            }
         },
 
         reset(state) {
-            state.tiles = [...defaultTiles]
+            state.tiles = {...defaultTiles}
+            state.bounds = {
+                x: {min: 0, max: 0},
+                y: {min: 0, max: 0}
+            }
         }
     },
 

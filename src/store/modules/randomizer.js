@@ -82,9 +82,12 @@ export default {
             dispatch('extend', {...tile, x: tile.x - 1})
         },
 
-        expand({dispatch, rootState}, options) {
-            rootState.tiles.forEach(tile => {
-                if (rootState.tiles.length > 1 && options && options.random) {
+        expand({commit, dispatch, rootState}, options) {
+            commit('startWorking')
+            const length = Object.keys(rootState.tiles).length
+
+            Object.values(rootState.tiles).forEach(tile => {
+                if (length > 1 && options && options.random) {
                     const ratio = options.ratio || 0.3
                     const random = Math.random()
 
@@ -97,7 +100,7 @@ export default {
                     dispatch('randomize', tile)
                 }
             })
-
+            commit('stopWorking')
         },
     }
 }
