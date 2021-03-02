@@ -2,18 +2,27 @@
   <div class="tile" :class="type" :style="style"
        @click="generate"
        v-if="terrain == null">
+    <button>
+      <plus-icon />
+    </button>
   </div>
 
   <div class="tile" :class="type.concat(neighbours)" :style="style"
-       @click.right="reset"
+       @click.right.prevent="reset"
        v-else>
   </div>
 </template>
 
 <script>
+import PlusIcon from 'vue-material-design-icons/Plus';
+
 export default {
   name: "Tile",
   props: ['tile'],
+
+  components: {
+    PlusIcon
+  },
 
   methods: {
     generate() {
@@ -21,7 +30,7 @@ export default {
     },
 
     reset() {
-      // this.$store.commit('tile', {...this.tile, terrain: null})
+      this.$store.commit('tile', {...this.tile, terrain: null})
     },
 
     terrainAt(x, y) {
@@ -76,8 +85,6 @@ export default {
 
       return {
         fontSize: `${this.scale / 2}px`,
-        lineHeight: `${this.scale / 2}px`,
-
         top: `calc(${center} + ${this.y * this.scale}px)`,
         left: `calc(${center} + ${this.x * this.scale}px)`,
         height: this.scale + 'px',
@@ -102,19 +109,19 @@ export default {
   transition: all .3s, font-size 0ms;
 
   &.button {
-    &:before {
-      @include size(0.5);
-      content: '+';
-      text-align: center;
+    button {
+      @include size(0.65);
+      font-size: 0.65em;
       background: white;
       border: 1px solid #cccccc;
       border-radius: 50%;
       box-shadow: 0 0 1rem rgba(black, .05);
       transition: all 0.3s;
+      padding: 0;
     }
 
     &:hover {
-      &:before {
+      button {
         transform: scale(1.3);
       }
     }
