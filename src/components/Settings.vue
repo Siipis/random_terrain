@@ -29,7 +29,7 @@
         <random-icon />
         Random
       </button>
-      <button @click="$store.commit('reset')">
+      <button @click="$store.dispatch('reset')">
         <reset-icon />
         Reset
       </button>

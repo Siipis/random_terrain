@@ -1,15 +1,16 @@
 <template>
-  <div class="tile" :class="type" :style="style"
-       @click="generate"
-       v-if="terrain == null">
+  <div v-if="terrain == null" key="button"
+       class="tile" :class="type" :style="style"
+       @click="generate">
     <button>
-      <plus-icon />
+      <plus-icon/>
     </button>
   </div>
 
-  <div class="tile" :class="type.concat(neighbours)" :style="style"
-       @click.right.prevent="reset"
-       v-else>
+  <div v-else key="terrain"
+       class="tile" :class="type.concat(neighbours)" :style="style"
+       @click.left.prevent="generate"
+       @click.right.prevent="reset">
   </div>
 </template>
 
@@ -26,11 +27,11 @@ export default {
 
   methods: {
     generate() {
-      this.$store.dispatch('randomize', this.$props.tile)
+      this.$store.dispatch('randomize', this.tile)
     },
 
     reset() {
-      this.$store.commit('tile', {...this.tile, terrain: null})
+      this.$store.commit('tileTerrain', {...this.tile, terrain: null})
     },
 
     terrainAt(x, y) {
@@ -39,6 +40,10 @@ export default {
   },
 
   computed: {
+    key() {
+      return this.$props.tile.key
+    },
+
     x() {
       return this.$props.tile.x
     },

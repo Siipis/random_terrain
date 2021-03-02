@@ -1,10 +1,13 @@
 <template>
   <div id="app">
-    <div id="loading" v-if="working">
-      <div class="icon">
-        <loading-icon />
+    <transition name="fade">
+      <div id="loading" v-if="working">
+        <div class="icon">
+          <loading-icon />
+        </div>
       </div>
-    </div>
+    </transition>
+
     <Settings/>
     <Terrain/>
   </div>

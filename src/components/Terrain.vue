@@ -2,12 +2,13 @@
   <div id="terrain" tabindex="1"
        @wheel.prevent="zoom" @keypress.prevent="pane">
     <transition-group name="terrain" tag="div" id="terrain--container" :style="containerStyle">
-      <Tile v-for="tile in tiles" :tile="tile" :key="`${tile.x}:${tile.y}`"/>
+      <Tile v-for="tile in tiles" :tile="tile" :key="tile.key"/>
     </transition-group>
   </div>
 </template>
 
 <script>
+import {debounce} from 'lodash'
 import Tile from "@/components/Tile";
 import {mapState} from "vuex";
 
@@ -15,8 +16,14 @@ export default {
   name: "Terrain",
   components: {Tile},
 
+  created() {
+    this.$store.commit('addTile', {x: 0, y: 0, terrain: null})
+  },
+
   beforeUpdate() {
-    this.$store.commit('startWorking')
+    debounce(() => {
+      this.$store.commit('startWorking')
+    }, 500)
   },
 
   updated() {

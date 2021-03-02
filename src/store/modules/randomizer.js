@@ -24,9 +24,14 @@ export default {
             weights.add(getters.weightsAt(x + 1, y))
             weights.add(getters.weightsAt(x - 1, y))
 
+            const existingTerrain = getters.terrainAt(x, y)
             const lim = limits[rootState.terrain.current]
 
             return weights.filter((terrain) => {
+                if (existingTerrain === terrain) {
+                    return false
+                }
+
                 if (lim[terrain]) {
                     const start = {x, y}
                     const count = [
@@ -73,13 +78,8 @@ export default {
     },
 
     actions: {
-        randomize({commit, getters, dispatch}, tile) {
-            commit('tile', {...tile, terrain: getters.randomize(tile)})
-
-            dispatch('extend', {...tile, y: tile.y + 1})
-            dispatch('extend', {...tile, y: tile.y - 1})
-            dispatch('extend', {...tile, x: tile.x + 1})
-            dispatch('extend', {...tile, x: tile.x - 1})
+        randomize({dispatch, getters}, tile) {
+            dispatch('tile', {...tile, terrain: getters.randomize(tile)})
         },
 
         expand({commit, dispatch, rootState}, options) {
