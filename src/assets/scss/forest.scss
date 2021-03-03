@@ -39,6 +39,218 @@ $shallowBorder: 10px double rgba($shallowWater, .5);
   }
 }
 
+.trail {
+  background: $grass;
+  overflow: hidden;
+  position: relative;
+
+  $trailWidth: 0.3em;
+  $trailCenter: calc(50% - (0.3em / 2));
+  $trailOutside: 29%;
+
+  &:before, &:after {
+    content: '';
+    display: block;
+    border-width: 0;
+    border-color: #4e4843;
+    border-style: dotted;
+    position: absolute;
+  }
+
+  &:before {
+    width: 0;
+    height: 100%;
+    top: 0;
+    left: $trailCenter;
+  }
+
+  &:after {
+    width: 100%;
+    height: 0;
+    top: $trailCenter;
+    left: 0;
+  }
+
+  &:not([class*="--top"]), &:not([class*="--bottom"]) {
+    &:before {
+      border-left-width: $trailWidth;
+    }
+  }
+
+  &:not([class*="--left"]), &:not([class*="--right"]) {
+    &:before {
+      border-left-width: $trailWidth;
+    }
+  }
+
+  &[class*="--top"][class*="--bottom"][class*="--left"][class*="--right"] {
+    &:not([class*="trail--"]) {
+      &:before {
+        height: 140%;
+        top: -20%;
+        border-left-width: 0.20em;
+      }
+
+      &:nth-child(3n) {
+        &:before {
+          transform: rotate(90deg);
+        }
+      }
+
+      &:nth-child(4n+1) {
+        &:before {
+          transform: rotate(45deg);
+        }
+      }
+
+      &:nth-child(4n) {
+        &:before {
+          transform: rotate(-45deg);
+        }
+      }
+    }
+  }
+
+  &.trail--top.trail--bottom.trail--left.trail--right {
+    &:before {
+      border-left-width: $trailWidth;
+    }
+
+    &:after {
+      top: 0;
+      left: $trailCenter;
+      height: 100%;
+      width: 0;
+      border-left-width: $trailWidth;
+    }
+  }
+
+  &.trail--top.trail--bottom {
+    &:before {
+      border-left-width: $trailWidth;
+    }
+
+    &.trail--left:not(.trail--right) {
+      &:after {
+        left: unset;
+        right: $trailOutside;
+        width: 100%;
+        height: 0;
+        border-bottom-width: $trailWidth;
+      }
+    }
+
+    &.trail--right:not(.trail--left) {
+      &:after {
+        left: $trailOutside;
+        width: 100%;
+        height: 0;
+        border-bottom-width: $trailWidth;
+      }
+    }
+  }
+
+  &.trail--top, &.trail--bottom {
+    &:not(.trail--left):not(.trail--right) {
+      &:before {
+        border-left-width: $trailWidth;
+      }
+    }
+  }
+
+  &.trail--left.trail--right {
+    &:before {
+      border-left-width: $trailWidth;
+      transform: rotate(90deg);
+    }
+
+    &.trail--top:not(.trail--bottom) {
+      &:after {
+        top: unset;
+        bottom: $trailOutside;
+        left: $trailCenter;
+        width: 0;
+        height: 100%;
+        border-left-width: $trailWidth;
+      }
+    }
+
+    &.trail--bottom:not(.trail--top) {
+      &:after {
+        top: $trailOutside;
+        left: $trailCenter;
+        width: 0;
+        height: 100%;
+        border-left-width: $trailWidth;
+      }
+    }
+  }
+
+  &.trail--left, &.trail--right {
+    &:not(.trail--top):not(.trail--bottom) {
+      &:before {
+        border-left-width: $trailWidth;
+        transform: rotate(90deg);
+      }
+    }
+  }
+
+  &.trail--top:not(.trail--bottom) {
+    &.trail--left:not(.trail--right) {
+      &:before {
+        width: $trailCenter;
+        height: $trailCenter;
+        left: 0;
+        border-width: 0;
+        border-bottom-width: $trailWidth;
+        border-right-width: $trailWidth;
+        border-bottom-right-radius: 100%;
+      }
+    }
+
+    &.trail--right:not(.trail--left) {
+      &:before {
+        width: $trailCenter;
+        height: $trailCenter;
+        top: 0;
+        left: $trailCenter;
+        border-width: 0;
+        border-bottom-width: $trailWidth;
+        border-left-width: $trailWidth;
+        border-bottom-left-radius: 100%;
+      }
+    }
+  }
+
+  &.trail--bottom:not(.trail--top) {
+    &.trail--left:not(.trail--right) {
+      &:before {
+        width: $trailCenter;
+        height: $trailCenter;
+        top: $trailCenter;
+        left: 0;
+        border-width: 0;
+        border-top-width: $trailWidth;
+        border-right-width: $trailWidth;
+        border-top-right-radius: 100%;
+      }
+    }
+
+    &.trail--right:not(.trail--left) {
+      &:before {
+        width: $trailCenter;
+        height: $trailCenter;
+        top: $trailCenter;
+        left: $trailCenter;
+        border-width: 0;
+        border-top-width: $trailWidth;
+        border-left-width: $trailWidth;
+        border-top-left-radius: 100%;
+      }
+    }
+  }
+}
+
 .shallowWater {
   @include water;
   background: $grass;
@@ -49,7 +261,7 @@ $shallowBorder: 10px double rgba($shallowWater, .5);
   }
 
   &[class*="--top"][class*="--bottom"][class*="--left"][class*="--right"] {
-    &:not([class*="Water--top"]):not([class*="Water--bottom"]):not([class*="Water--left"]):not([class*="Water--right"]) {
+    &:not([class*="Water--"]) {
       &:before {
         background: #1ba085;
         border: 0.25em double $grass;

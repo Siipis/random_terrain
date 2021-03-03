@@ -9,6 +9,7 @@ export const forest = {
     trees: {
         trees: 50,
         denseTrees: 10,
+        trail: 2,
         rock: 2,
         shallowWater: 2,
     },
@@ -28,6 +29,11 @@ export const forest = {
         deepWater: 100,
         trees: 10,
     },
+
+    trail: {
+        trail: 50,
+        trees: 2,
+    }
 }
 
 /**
@@ -40,5 +46,6 @@ export const forest = {
  */
 export const forestLimit = {
     shallowWater: [1, null],
+    trail: [1, null],
     // denseTrees: [3, 3],
 }
