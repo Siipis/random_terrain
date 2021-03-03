@@ -18,7 +18,13 @@ export default {
 
   data() {
     return {
-      loader: null
+      loader: null,
+      scrollHeight: 0,
+      scrollWidth: 0,
+      scrollTop: 0,
+      scrollBottom: 0,
+      scrollLeft: 0,
+      scrollRight: 0,
     }
   },
 
@@ -27,6 +33,8 @@ export default {
   },
 
   beforeUpdate() {
+    this.saveScrollPosition()
+
     this.loader = debounce(() => {
       this.$store.commit('startWorking')
     }, 100)
@@ -35,6 +43,8 @@ export default {
   },
 
   updated() {
+    this.recoverScrollPosition()
+
     this.loader.cancel()
     this.$store.commit('stopWorking')
   },
@@ -72,6 +82,53 @@ export default {
             break
         }
       }, 200)()
+    },
+
+    saveScrollPosition() {
+      this.scrollHeight = this.$el.scrollHeight
+      this.scrollWidth = this.$el.scrollWidth
+      this.scrollTop = this.$el.scrollTop
+      this.scrollLeft = this.$el.scrollLeft
+      this.scrollBottom = this.$el.scrollTop + this.$el.clientHeight
+      this.scrollRight = this.$el.scrollLeft + this.$el.clientWidth
+    },
+
+    recoverScrollPosition() {
+      let scrollTopBy = (this.$el.scrollHeight - this.scrollHeight) / 2
+      let scrollLeftBy = (this.$el.scrollWidth - this.scrollWidth) / 2
+
+      if (this.isScrolledTop()) {
+        scrollTopBy = 0
+      } else if (this.isScrolledBottom()) {
+        scrollTopBy = this.$el.scrollHeight - this.scrollHeight
+      }
+
+      if (this.isScrolledLeft()) {
+        scrollLeftBy = 0
+      } else if (this.isScrolledRight()) {
+        scrollLeftBy = this.$el.scrollWidth - this.scrollWidth
+      }
+
+      this.$el.scrollBy({
+        top: scrollTopBy,
+        left: scrollLeftBy
+      })
+    },
+
+    isScrolledTop() {
+      return this.scrollTop === 0
+    },
+
+    isScrolledBottom() {
+      return this.scrollBottom === this.scrollHeight
+    },
+
+    isScrolledLeft() {
+      return this.scrollLeft === 0
+    },
+
+    isScrolledRight() {
+      return this.scrollRight === this.scrollWidth
     }
   },
 
