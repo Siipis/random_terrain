@@ -97,9 +97,9 @@ export default {
       const {scrollHeight, scrollWidth} = this.container
 
       let scrollTopBy = 0
-      if (this.position.isScrolledTop) {
+      if (this.position.isScrolledTop && !this.position.isScrolledBottom) {
         scrollTopBy = -scrollHeight
-      } else if (this.position.isScrolledBottom) {
+      } else if (this.position.isScrolledBottom && !this.position.isScrolledTop) {
         scrollTopBy = scrollHeight
       } else {
         scrollTopBy = (scrollHeight - this.position.scrollHeight) / 2
