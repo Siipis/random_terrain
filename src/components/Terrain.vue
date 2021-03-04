@@ -71,7 +71,8 @@ export default {
 
   computed: {
     containerStyle() {
-      const tileSize = this.scale * 100
+      const singleTile = this.size.height === 1 && this.size.width === 1
+      const tileSize = this.scale * 100 + (singleTile ? 4 : 0)
       const paddingY = Math.max((this.container.clientHeight - this.size.height * tileSize) / 2, 0)
       const paddingX = Math.max((this.container.clientWidth - this.size.width * tileSize) / 2, 0)
 
