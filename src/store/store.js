@@ -12,7 +12,9 @@ export default new Vuex.Store({
             scale: 50,
         },
         scales: [25, 50, 75, 100, 150],
-        tiles: {},
+        tiles: {
+            '0:0': {key: '0:0', x: 0, y: 0, terrain: null}
+        },
         bounds: {
             x: {min: 0, max: 0},
             y: {min: 0, max: 0}

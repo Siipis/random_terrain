@@ -28,10 +28,6 @@ export default {
     }
   },
 
-  created() {
-    this.$store.commit('addTile', {x: 0, y: 0, terrain: null})
-  },
-
   beforeUpdate() {
     this.saveScrollPosition()
 
