@@ -1,5 +1,5 @@
 <template>
-  <div v-if="terrain == null" key="button"
+  <div v-if="tile.terrain == null" key="button"
        class="tile" :class="type" :style="style"
        @click="generate">
     <button>
@@ -40,44 +40,30 @@ export default {
   },
 
   computed: {
-    key() {
-      return this.$props.tile.key
-    },
-
-    x() {
-      return this.$props.tile.x
-    },
-
-    y() {
-      return this.$props.tile.y
-    },
-
-    terrain() {
-      return this.$props.tile.terrain
-    },
-
     type() {
-      return this.terrain !== null ? ['terrain', this.terrain] : ['button']
+      const {terrain} = this.tile
+      return terrain !== null ? ['terrain', terrain] : ['button']
     },
 
     neighbours() {
+      const {x, y} = this.tile
       let neighbours = []
 
-      const terrainTop = this.terrainAt(this.x, this.y - 1)
+      const terrainTop = this.terrainAt(x, y - 1)
       if (terrainTop) {
         neighbours.push(terrainTop + '--top')
       }
 
-      const terrainBottom = this.terrainAt(this.x, this.y + 1)
+      const terrainBottom = this.terrainAt(x, y + 1)
       if (terrainBottom) {
         neighbours.push(terrainBottom + '--bottom')
       }
 
-      const terrainLeft = this.terrainAt(this.x - 1, this.y)
+      const terrainLeft = this.terrainAt(x - 1, y)
       if (terrainLeft) {
         neighbours.push(terrainLeft + '--left')
       }
-      const terrainRight = this.terrainAt(this.x + 1, this.y)
+      const terrainRight = this.terrainAt(x + 1, y)
       if (terrainRight) {
         neighbours.push(terrainRight + '--right')
       }
@@ -86,14 +72,15 @@ export default {
     },
 
     style() {
-      const center = `50% - ${this.scale / 2}px`
+      const {x, y} = this.tile
+      const bounds = this.$store.state.bounds
 
       return {
-        fontSize: `${this.scale / 2}px`,
-        top: `calc(${center} + ${this.y * this.scale}px)`,
-        left: `calc(${center} + ${this.x * this.scale}px)`,
-        height: this.scale + 'px',
-        width: this.scale + 'px',
+        fontSize: `${this.scale * 50}px`,
+        width: `${this.scale * 100}px`,
+        height: `${this.scale * 100}px`,
+        gridRow: Math.abs(bounds.y.min) + y + 1,
+        gridColumn: Math.abs(bounds.x.min) + x + 1,
       }
     },
 
@@ -109,9 +96,8 @@ export default {
 @import "../assets/scss/terrains";
 
 .tile {
-  position: absolute;
   cursor: pointer;
-  transition: all .3s, font-size 0ms;
+  transition: width .5s ease-out, height .5s ease-out;
 
   &.button {
     button {

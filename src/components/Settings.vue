@@ -15,7 +15,7 @@
       <select id="scaleSelect" @change="$store.commit('scale', $event.target.value)">
         <option v-for="option in scales" :key="option"
                 :value="option" :selected="option === scale">
-          {{ option }}
+          {{ option * 100 }}%
         </option>
       </select>
     </div>

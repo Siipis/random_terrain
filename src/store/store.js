@@ -9,9 +9,9 @@ export default new Vuex.Store({
     state: {
         working: false,
         config: {
-            scale: 50,
+            scale: 1,
         },
-        scales: [25, 50, 75, 100, 150],
+        scales: [0.25, 0.5, 0.75, 1, 1.5, 2, 3],
         tiles: {
             '0:0': {key: '0:0', x: 0, y: 0, terrain: null}
         },
