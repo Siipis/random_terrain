@@ -1,4 +1,5 @@
-# random_terrain
+# Random RPG Terrain Generator
+Personal project built with Vue.js. Live demo: http://code.varjohovi.net/random_terrain/
 
 ## Project setup
 ```
