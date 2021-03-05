@@ -73,7 +73,7 @@ export default new Vuex.Store({
         },
 
         scale(state, scale) {
-            state.config.scale = scale
+            state.config.scale = parseFloat(scale)
         },
 
         bounds(state, bounds) {
