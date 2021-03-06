@@ -29,11 +29,25 @@ export default {
     LoadingIcon,
   },
 
+  data() {
+    return {
+      animateInterval: false
+    }
+  },
+
   mounted() {
     this.container.focus()
+
+    this.grid.addEventListener('transitionstart', this.handleTransitionStart)
   },
 
   methods: {
+    handleTransitionStart(event) {
+      if (event.target === this.grid) {
+        this.animateZoomFocus()
+      }
+    },
+
     pane($event) {
       throttle(() => {
         const scrollBy = 100
@@ -65,21 +79,39 @@ export default {
     },
 
     centerZoomFocus() {
-      let timer = 0
+      clearInterval(this.animateInterval)
 
-      const focuser = setInterval(() => {
-        timer++
+      this.zoomFocus.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+        inline: 'center'
+      })
+    },
 
+    animateZoomFocus() {
+      if (!this.animateInterval) {
+        this.animateInterval = setInterval(this.animateZoomFocus, 1)
+      }
+
+      const {scrollHeight, scrollWidth, clientHeight, clientWidth, scrollTop, scrollLeft} = this.container
+      const {top, left, width, height} = this.zoomFocus.getBoundingClientRect()
+
+      const isTop = scrollTop - top < 0
+      const isBottom = scrollTop + clientHeight === scrollHeight
+      const isCenteredY = top === Math.floor((clientHeight - height) / 2)
+
+      const isLeft = scrollLeft - left >= 0
+      const isRight = scrollLeft + clientWidth === scrollWidth
+      const isCenteredX = left === Math.floor((clientWidth - width) / 2)
+
+      if ((isTop || isBottom || isCenteredY) && (isLeft || isRight || isCenteredX)) {
+        clearInterval(this.animateInterval)
+      } else {
         this.zoomFocus.scrollIntoView({
-          behavior: 'smooth',
           block: 'center',
-          inline: 'center'
+          inline: 'center',
         })
-
-        if (timer > 500) {
-          clearInterval(focuser)
-        }
-      }, 1)
+      }
     }
   },
 
@@ -92,13 +124,21 @@ export default {
       return this.$refs.terrain.$el
     },
 
+    grid() {
+      return this.$refs.terrain.$refs.grid.$el
+    },
+
     zoomFocus() {
       return this.$refs.terrain.$refs.zoomFocus
     }
   },
 
   watch: {
-    '$store.config.zoomFocus'() {
+    '$store.state.tiles'() {
+      this.animateZoomFocus()
+    },
+
+    '$store.state.config.zoomFocus'() {
       this.centerZoomFocus()
     }
   }

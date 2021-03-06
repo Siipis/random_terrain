@@ -40,6 +40,24 @@ export default new Vuex.Store({
     },
 
     actions: {
+        zoomIn({state, commit}, zoomFocus) {
+            const scale = state.scales[state.scales.indexOf(state.config.scale) - 1]
+
+            if (scale !== undefined) {
+                commit('zoomFocus', zoomFocus)
+                commit('scale', scale)
+            }
+        },
+
+        zoomOut({state, commit}, zoomFocus) {
+            const scale = state.scales[state.scales.indexOf(state.config.scale) + 1]
+
+            if (scale !== undefined) {
+                commit('zoomFocus', zoomFocus)
+                commit('scale', scale)
+            }
+        },
+
         tile({commit, dispatch}, tile) {
             commit('tileTerrain', tile)
             dispatch('extend', {...tile, y: tile.y + 1})
@@ -90,6 +108,9 @@ export default new Vuex.Store({
         },
 
         zoomFocus(state, zoomFocus) {
+            const {col, row} = state.config.zoomFocus
+            if (zoomFocus.col === col && zoomFocus.row === row) return
+
             state.config.zoomFocus = zoomFocus
         },
 
@@ -107,22 +128,6 @@ export default new Vuex.Store({
                     min: Math.min(state.bounds.y.min, tile.y),
                     max: Math.max(state.bounds.y.max, tile.y),
                 }
-            }
-        },
-
-        zoomIn(state) {
-            const scale = state.scales[state.scales.indexOf(state.config.scale) - 1]
-
-            if (scale !== undefined) {
-                state.config.scale = scale
-            }
-        },
-
-        zoomOut(state) {
-            const scale = state.scales[state.scales.indexOf(state.config.scale) + 1]
-
-            if (scale !== undefined) {
-                state.config.scale = scale
             }
         },
 

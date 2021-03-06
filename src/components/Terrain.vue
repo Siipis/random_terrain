@@ -1,5 +1,5 @@
 <template>
-  <div id="terrain" tabindex="1" @wheel.prevent="zoom">
+  <div id="terrain" tabindex="1" @wheel.prevent="handleZoom">
     <div id="terrain--container" ref="container"
          :class="animationClasses" :style="containerStyle">
 
@@ -94,12 +94,10 @@ export default {
       this.$store.commit('stopWorking')
     }
     this.showLoader.cancel()
-
-    this.$emit('center')
   },
 
   methods: {
-    zoom($event) {
+    handleZoom($event) {
       const {width, height} = this.size
       const {top, bottom, left, right} = this.$refs.grid.$el.getBoundingClientRect()
       const {deltaY, clientX, clientY} = $event
@@ -119,8 +117,10 @@ export default {
         row = Math.floor((clientY - top) / tileSize) + 1
       }
 
-      this.$store.commit('zoomFocus', {row, col})
-      this.$store.commit(deltaY > 0 ? 'zoomIn' : 'zoomOut')
+      this.$store.dispatch(
+          deltaY > 0 ? 'zoomIn' : 'zoomOut',
+          {row, col}
+      )
     },
 
     storePosition() {
@@ -140,20 +140,28 @@ export default {
       }
     },
 
-    containerStyle() {
-      if (this.$store.state.config.fade) return {}
-
+    padding() {
       const {width, height} = this.size
       const {clientWidth, clientHeight} = this.position
 
       const singleTile = height === 1 && width === 1
       const tileSize = this.scale * 100 + (singleTile ? 4 : 0)
 
-      const paddingY = Math.max((clientHeight - height * tileSize) / 2, 0)
-      const paddingX = Math.max((clientWidth - width * tileSize) / 2, 0)
+      return {
+        x: Math.floor(
+            Math.max((clientWidth - width * tileSize) / 2, 0)
+        ),
+        y: Math.floor(
+            Math.max((clientHeight - height * tileSize) / 2, 0)
+        ),
+      }
+    },
+
+    containerStyle() {
+      if (this.$store.state.config.fade) return {}
 
       return {
-        padding: `${Math.floor(paddingY)}px ${Math.floor(paddingX)}px`
+        padding: `${this.padding.y}px ${this.padding.x}px`
       }
     },
 
@@ -164,7 +172,9 @@ export default {
         width: `${this.scale * 100}px`,
         height: `${this.scale * 100}px`,
         gridRow: row,
-        gridColumn: col
+        gridColumn: col,
+        border: '2px solid red',
+        zIndex: '10'
       }
     },
 
