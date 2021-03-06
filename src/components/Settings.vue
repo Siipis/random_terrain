@@ -12,7 +12,7 @@
 
     <div class="form--control">
       <label for="scaleSelect">Scale</label>
-      <select id="scaleSelect" @change="$store.commit('scale', $event.target.value)">
+      <select id="scaleSelect" @change="setScale">
         <option v-for="option in scales" :key="option"
                 :value="option" :selected="option === scale">
           {{ option * 100 }}%
@@ -22,15 +22,15 @@
 
     <div class="form--control buttons">
       <button @click="$store.dispatch('expand')" :disabled="working">
-        <expand-icon />
+        <expand-icon/>
         Expand
       </button>
       <button @click="$store.dispatch('expand', {random: true})" :disabled="working">
-        <random-icon />
+        <random-icon/>
         Random
       </button>
-      <button @click="$store.dispatch('reset')">
-        <reset-icon />
+      <button @click="reset">
+        <reset-icon/>
         Reset
       </button>
     </div>
@@ -50,6 +50,28 @@ export default {
     ExpandIcon,
     RandomIcon,
     ResetIcon,
+  },
+
+  methods: {
+    setScale($event) {
+      const {width, height} = this.$store.getters.size
+
+      this.$store.commit('zoomFocus', {
+        row: Math.ceil(height / 2),
+        col: Math.ceil(width / 2)
+      })
+
+      this.$store.commit('scale', $event.target.value)
+    },
+
+    reset() {
+      this.$store.commit('fade', true)
+
+      document.getElementsByClassName('tile')[0]
+          .addEventListener('transitionend', () => {
+            this.$store.dispatch('reset')
+          }, true)
+    }
   },
 
   computed: {

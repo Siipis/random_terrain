@@ -3,13 +3,13 @@
     <transition name="fade">
       <div id="loading" v-if="working">
         <div class="icon">
-          <loading-icon />
+          <loading-icon/>
         </div>
       </div>
     </transition>
 
     <Settings/>
-    <Terrain ref="terrain"/>
+    <Terrain ref="terrain" v-on:center="centerZoomFocus"/>
   </div>
 </template>
 
@@ -29,25 +29,8 @@ export default {
     LoadingIcon,
   },
 
-  data() {
-    return {
-      position: {}
-    }
-  },
-
   mounted() {
     this.container.focus()
-
-    this.resetScrollPosition()
-    this.saveScrollPosition()
-  },
-
-  beforeUpdate() {
-    this.saveScrollPosition()
-  },
-
-  updated() {
-    this.recoverScrollPosition()
   },
 
   methods: {
@@ -81,52 +64,22 @@ export default {
       }, 200)()
     },
 
-    saveScrollPosition() {
-      const {scrollHeight, scrollWidth, clientHeight, clientWidth, scrollTop, scrollLeft} = this.container
+    centerZoomFocus() {
+      let timer = 0
 
-      this.position = {
-        scrollHeight, scrollWidth,
-        isScrolledTop: scrollTop === 0,
-        isScrolledBottom: scrollTop + clientHeight === scrollHeight,
-        isScrolledLeft: scrollLeft === 0,
-        isScrolledRight: scrollLeft + clientWidth === scrollWidth,
-      }
-    },
+      const focuser = setInterval(() => {
+        timer++
 
-    recoverScrollPosition() {
-      const {scrollHeight, scrollWidth} = this.container
+        this.zoomFocus.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center',
+          inline: 'center'
+        })
 
-      let scrollTopBy = 0
-      if (this.position.isScrolledTop && !this.position.isScrolledBottom) {
-        scrollTopBy = -scrollHeight
-      } else if (this.position.isScrolledBottom && !this.position.isScrolledTop) {
-        scrollTopBy = scrollHeight
-      } else {
-        scrollTopBy = (scrollHeight - this.position.scrollHeight) / 2
-      }
-
-      let scrollLeftBy = 0
-      if (this.position.isScrolledLeft) {
-        scrollLeftBy = -scrollWidth
-      } else if (this.position.isScrolledRight) {
-        scrollLeftBy = scrollWidth
-      } else {
-        scrollLeftBy = (scrollWidth - this.position.scrollWidth) / 2
-      }
-
-      this.container.scrollBy({
-        top: scrollTopBy,
-        left: scrollLeftBy
-      })
-    },
-
-    resetScrollPosition() {
-      const {scrollHeight, scrollWidth, clientHeight, clientWidth} = this.container
-
-      this.container.scroll({
-        top: (scrollHeight - clientHeight) / 2,
-        left: (scrollWidth - clientWidth) / 2
-      })
+        if (timer > 500) {
+          clearInterval(focuser)
+        }
+      }, 1)
     }
   },
 
@@ -137,6 +90,16 @@ export default {
 
     container() {
       return this.$refs.terrain.$el
+    },
+
+    zoomFocus() {
+      return this.$refs.terrain.$refs.zoomFocus
+    }
+  },
+
+  watch: {
+    '$store.config.zoomFocus'() {
+      this.centerZoomFocus()
     }
   }
 }
@@ -154,6 +117,11 @@ html, body {
   padding: 0;
   width: 100%;
   height: 100%;
+}
+
+.transition {
+  transition-duration: .5s;
+  transition-timing-function: ease-out;
 }
 
 #app {

@@ -10,6 +10,11 @@ export default new Vuex.Store({
         working: false,
         config: {
             scale: 1,
+            zoomFocus: {
+                row: 1,
+                col: 1,
+            },
+            fade: false
         },
         scales: [0.25, 0.5, 0.75, 1, 1.5, 2, 3],
         tiles: {
@@ -57,13 +62,21 @@ export default new Vuex.Store({
                 x: {min: 0, max: 0},
                 y: {min: 0, max: 0}
             })
+            commit('zoomFocus', {
+                row: 1, col: 1
+            })
             commit('addTile', {
                 x: 0, y: 0, terrain: null
             })
+            commit('fade', false)
         }
     },
 
     mutations: {
+        fade(state, fade) {
+            state.config.fade = fade
+        },
+
         startWorking(state) {
             state.working = true
         },
@@ -74,6 +87,10 @@ export default new Vuex.Store({
 
         scale(state, scale) {
             state.config.scale = parseFloat(scale)
+        },
+
+        zoomFocus(state, zoomFocus) {
+            state.config.zoomFocus = zoomFocus
         },
 
         bounds(state, bounds) {

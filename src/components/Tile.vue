@@ -1,6 +1,6 @@
 <template>
   <div v-if="tile.terrain == null" key="button"
-       class="tile" :class="type" :style="style"
+       :class="classes" :style="style"
        @click="generate">
     <button>
       <plus-icon/>
@@ -8,7 +8,7 @@
   </div>
 
   <div v-else key="terrain"
-       class="tile" :class="type.concat(neighbours)" :style="style"
+       class="transition" :class="classes" :style="style"
        @click.left.prevent="generate"
        @click.right.prevent="reset">
   </div>
@@ -25,13 +25,31 @@ export default {
     PlusIcon
   },
 
+  data() {
+    return {
+      unsubscribe: null
+    }
+  },
+
   methods: {
     generate() {
       this.$store.dispatch('randomize', this.tile)
+
+      if (this.tile.terrain === null) {
+        this.$store.commit('zoomFocus', {
+          row: this.row,
+          col: this.col
+        })
+      }
     },
 
     reset() {
       this.$store.commit('tileTerrain', {...this.tile, terrain: null})
+
+      this.$store.commit('zoomFocus', {
+        row: this.row,
+        col: this.col
+      })
     },
 
     terrainAt(x, y) {
@@ -40,9 +58,21 @@ export default {
   },
 
   computed: {
-    type() {
-      const {terrain} = this.tile
-      return terrain !== null ? ['terrain', terrain] : ['button']
+    classes() {
+      const classes = []
+
+      if (this.$store.state.config.fade) {
+        classes.push('fade')
+      }
+
+      if (this.tile.terrain === null) {
+        return classes.concat('button')
+      }
+
+      classes.push('terrain', this.tile.terrain)
+      classes.push(...this.neighbours)
+
+      return classes
     },
 
     neighbours() {
@@ -71,16 +101,21 @@ export default {
       return neighbours
     },
 
-    style() {
-      const {x, y} = this.tile
+    row() {
       const bounds = this.$store.state.bounds
+      return Math.abs(bounds.y.min) + this.tile.y + 1
+    },
 
+    col() {
+      const bounds = this.$store.state.bounds
+      return Math.abs(bounds.x.min) + this.tile.x + 1
+    },
+
+    style() {
       return {
         fontSize: `${this.scale * 50}px`,
-        width: `${this.scale * 100}px`,
-        height: `${this.scale * 100}px`,
-        gridRow: Math.abs(bounds.y.min) + y + 1,
-        gridColumn: Math.abs(bounds.x.min) + x + 1,
+        gridRow: this.row,
+        gridColumn: this.col,
       }
     },
 
@@ -97,7 +132,7 @@ export default {
 
 .tile {
   cursor: pointer;
-  transition: width .5s ease-out, height .5s ease-out;
+  transition-property: width, height;
 
   &.button {
     button {
@@ -129,6 +164,18 @@ export default {
 
     &:not([class*="--bottom"]) {
       border-bottom: $border;
+    }
+  }
+
+  &.fade {
+    opacity: 0;
+    transition-property: opacity;
+    transition-duration: 1s;
+    transition-timing-function: ease-out;
+
+    &:before, &:after, & * {
+      opacity: 0;
+      transition: all 1s ease-out;
     }
   }
 }
