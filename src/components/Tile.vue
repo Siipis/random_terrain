@@ -61,10 +61,6 @@ export default {
     classes() {
       const classes = []
 
-      if (this.$store.state.config.fade) {
-        classes.push('fade')
-      }
-
       if (this.tile.terrain === null) {
         return classes.concat('button')
       }
@@ -132,6 +128,8 @@ export default {
 
 .tile {
   cursor: pointer;
+  width: 100%;
+  height: 100%;
   transition-property: width, height;
 
   &.button {
@@ -153,7 +151,7 @@ export default {
     }
   }
 
-  &.terrain {
+  &.terrain:not(.blank) {
     $border: 1px solid #666;
     border-top: $border;
     border-left: $border;
@@ -167,15 +165,17 @@ export default {
     }
   }
 
-  &.fade {
+  &.blank {
     opacity: 0;
-    transition-property: opacity;
-    transition-duration: 1s;
-    transition-timing-function: ease-out;
+    width: 0;
+    height: 0;
+    background: white;
+    transition: all .5s ease-in;
 
     &:before, &:after, & * {
       opacity: 0;
-      transition: all 1s ease-out;
+      background: transparent;
+      transition: all .5s ease-in;
     }
   }
 }

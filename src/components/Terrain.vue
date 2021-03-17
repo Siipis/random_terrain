@@ -1,14 +1,12 @@
 <template>
-  <div id="terrain" tabindex="1" @wheel.prevent="handleZoom">
-    <div id="terrain--container" ref="container"
-         :class="animationClasses" :style="containerStyle">
-
-      <div class="grid zoom--grid" :class="animationClasses" :style="gridStyle">
-        <div id="zoom-focus" ref="zoomFocus" :class="animationClasses" :style="focusStyle"></div>
+  <div id="terrain" tabindex="1" @wheel.prevent="handleZoom" @keypress.prevent="pane">
+    <div id="terrain--container" ref="container" :style="styles.container">
+      <div class="grid zoom--grid" :style="styles.grid">
+        <div id="zoom-focus" ref="zoomFocus" :style="styles.zoomFocus"></div>
       </div>
 
       <transition-group name="grid" tag="div" ref="grid"
-                        class="grid" :class="animationClasses" :style="gridStyle">
+                        class="grid" :style="styles.grid">
         <Tile v-for="tile in tiles" :tile="tile" :key="tile.key" class="tile"/>
       </transition-group>
     </div>
@@ -16,84 +14,45 @@
 </template>
 
 <script>
-import {debounce, delay} from 'lodash'
+import {throttle} from 'lodash'
 import Tile from "@/components/Tile";
 import {mapState, mapGetters} from "vuex";
 
 export default {
   name: "Terrain",
+  props: ['styles'],
   components: {Tile},
 
   data() {
     return {
-      unsubscribe: null,
-      showLoader: null,
-      transition: false,
-
-      position: {
-        clientHeight: 0,
-        clientWidth: 0
-      }
+      unsubscribe: {},
     }
   },
 
   created() {
-    this.unsubscribe = this.$store.subscribeAction(({type}) => {
+    this.unsubscribe.action = this.$store.subscribeAction(({type}) => {
       if (type === 'expand') {
-        const {width, height} = this.size
-        const {scrollHeight, scrollWidth, clientHeight, clientWidth, scrollTop, scrollLeft} = this.$el
-
-        const isScrolledTop = scrollTop === 0
-        const isScrolledBottom = scrollTop + clientHeight === scrollHeight
-        const isScrolledLeft = scrollLeft === 0
-        const isScrolledRight = scrollLeft + clientWidth === scrollWidth
-
-        let row = Math.ceil(height / 2) + 1
-        if (isScrolledTop && !isScrolledBottom) {
-          row = 1
-        } else if (isScrolledBottom && !isScrolledTop) {
-          row = height
-        }
-
-        let col = Math.ceil(width / 2) + 1
-        if (isScrolledLeft && !isScrolledRight) {
-          col = 1
-        } else if (isScrolledRight && !isScrolledLeft) {
-          col = width
-        }
-
-        this.$store.commit('zoomFocus', {col, row})
+        this.handleExpand()
       }
     })
   },
 
   destroyed() {
-    this.unsubscribe()
+    if (typeof this.unsubscribe === 'function') {
+      this.unsubscribe()
+    }
   },
 
   mounted() {
-    this.$emit('center')
-    this.storePosition()
-    delay(() => {
-      this.transition = true
-    }, 1000)
-  },
+    this.$refs.container.focus()
 
-  beforeUpdate() {
-    this.showLoader = debounce(() => {
-      this.$store.commit('startWorking')
-    }, 100)
+    this.$refs.zoomFocus.scrollIntoView({
+      block: 'center',
+      inline: 'center',
+    })
 
-    this.showLoader()
-  },
-
-  updated() {
-    this.transition = true
-
-    if (this.$store.state.working) {
-      this.$store.commit('stopWorking')
-    }
-    this.showLoader.cancel()
+    this.syncContainer()
+    window.addEventListener('resize', this.syncContainer, {passive: true})
   },
 
   methods: {
@@ -123,91 +82,81 @@ export default {
       )
     },
 
-    storePosition() {
+    handleExpand() {
+      const {width, height} = this.size
+      const {scrollHeight, scrollWidth, clientHeight, clientWidth, scrollTop, scrollLeft} = document.getElementById('terrain--container')
+
+      const isScrolledTop = scrollTop === 0
+      const isScrolledBottom = scrollTop + clientHeight === scrollHeight
+      const isScrolledLeft = scrollLeft === 0
+      const isScrolledRight = scrollLeft + clientWidth === scrollWidth
+
+      let row = Math.ceil(height / 2) + 1
+      if (isScrolledTop && !isScrolledBottom) {
+        row = 1
+      } else if (isScrolledBottom && !isScrolledTop) {
+        row = height
+      }
+
+      let col = Math.ceil(width / 2) + 1
+      if (isScrolledLeft && !isScrolledRight) {
+        col = 1
+      } else if (isScrolledRight && !isScrolledLeft) {
+        col = width
+      }
+
+      this.$store.commit('zoomFocus', {col, row})
+    },
+
+    syncContainer() {
       const {clientHeight, clientWidth} = this.$el
 
-      this.position = {
+      this.$store.commit('container', {
         clientHeight, clientWidth
-      }
+      })
+    },
+
+    pane($event) {
+      throttle(() => {
+        const scrollBy = 100
+
+        let scrollTopBy = 0
+        let scrollLeftBy = 0
+
+        switch ($event.key) {
+          case 'w':
+            scrollTopBy = -scrollBy
+            break
+          case 'a':
+            scrollLeftBy = -scrollBy
+            break
+          case 's':
+            scrollTopBy = scrollBy
+            break
+          case 'd':
+            scrollLeftBy = scrollBy
+            break
+        }
+
+        this.$el.scrollBy({
+          top: scrollTopBy,
+          left: scrollLeftBy,
+          behavior: 'smooth'
+        })
+      }, 200)()
     },
   },
 
   computed: {
-    animationClasses() {
-      return {
-        transition: this.transition,
-        fade: this.$store.state.config.fade
-      }
-    },
-
-    padding() {
-      const {width, height} = this.size
-      const {clientWidth, clientHeight} = this.position
-
-      const singleTile = height === 1 && width === 1
-      const tileSize = this.scale * 100 + (singleTile ? 4 : 0)
-
-      return {
-        x: Math.floor(
-            Math.max((clientWidth - width * tileSize) / 2, 0)
-        ),
-        y: Math.floor(
-            Math.max((clientHeight - height * tileSize) / 2, 0)
-        ),
-      }
-    },
-
-    containerStyle() {
-      if (this.$store.state.config.fade) return {}
-
-      return {
-        padding: `${this.padding.y}px ${this.padding.x}px`
-      }
-    },
-
-    focusStyle() {
-      const {row, col} = this.$store.state.config.zoomFocus
-
-      return {
-        width: `${this.scale * 100}px`,
-        height: `${this.scale * 100}px`,
-        gridRow: row,
-        gridColumn: col,
-        border: '2px solid red',
-        zIndex: '10'
-      }
-    },
-
-    gridStyle() {
-      const {width, height} = this.size
-      const tileSize = this.scale * 100
-
-      return {
-        gridTemplateRows: `repeat(${height}, ${tileSize}px)`,
-        gridTemplateColumns: `repeat(${width}, ${tileSize}px)`
-      }
-    },
-
     ...mapState({
-      tiles: state => state.tiles,
+      transition: state => state.config.transition,
 
-      scale: state => state.config.scale
+      tiles: state => state.tiles,
     }),
 
     ...mapGetters([
       'size'
     ])
-  },
-
-  watch: {
-    tiles() {
-      this.storePosition()
-      this.transition = false
-    },
-
-    scale() {
-      this.$emit('center')
-    }
   }
 }
 </script>
@@ -223,29 +172,22 @@ export default {
   min-width: 100%;
   min-height: 100%;
   position: relative;
-  transition-property: width, height, padding;
 }
 
 .grid {
   display: inline-grid;
-  justify-items: stretch;
-  align-items: stretch;
-  transition-property: width, height, grid-template-rows, grid-template-columns;
+  justify-items: center;
+  align-items: center;
+  transition-property: opacity, font-size, grid-template-colums, grid-template-rows;
 
-  &-enter {
+  &-leave {
     opacity: 0;
+    width: 0;
+    height: 0;
   }
 
-  &-enter-active {
-    transition: opacity .5s ease-out;
-  }
-
-  &.fade {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translateX(-50%) translateY(-50%);
-    transition-property: width, height, grid-template-rows, grid-template-columns, top, left;
+  &-leave-active {
+    transition: all .2s ease-out;
   }
 }
 

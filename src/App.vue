@@ -1,5 +1,5 @@
 <template>
-  <div id="app" @keypress.prevent="pane">
+  <div id="app">
     <transition name="fade">
       <div id="loading" v-if="working">
         <div class="icon">
@@ -8,15 +8,17 @@
       </div>
     </transition>
 
-    <Settings/>
-    <Terrain ref="terrain" v-on:center="centerZoomFocus"/>
+    <Settings v-on:reset="animateFade"/>
+    <Terrain ref="terrain" :styles="stylesToCSS"/>
   </div>
 </template>
 
 <script>
 import 'vue-material-design-icons/styles.css';
 
-import {throttle} from "lodash";
+import {mapGetters, mapState} from "vuex";
+import {debounce} from "lodash";
+import TWEEN from "@tweenjs/tween.js"
 import Terrain from "@/components/Terrain";
 import Settings from "@/components/Settings";
 import LoadingIcon from 'vue-material-design-icons/Refresh'
@@ -31,86 +33,144 @@ export default {
 
   data() {
     return {
-      animateInterval: false
+      showLoader: null,
+      tweened: {
+        length: 1,
+        scale: 1,
+        padding: {
+          x: 0, y: 0,
+        },
+        scrollTop: 0,
+        scrollLeft: 0,
+      }
     }
   },
 
-  mounted() {
-    this.container.focus()
+  created() {
+    this.$store.subscribe(({type}) => {
+      if (type === 'container') {
+        this.tweened.padding = this.padding()
+      }
+    })
 
-    this.grid.addEventListener('transitionstart', this.handleTransitionStart)
+    this.$store.subscribeAction(({type}) => {
+      if (type === 'reset') {
+        this.tweened.padding = this.padding({width: 1, height: 1})
+      }
+    })
+  },
+
+  mounted() {
+    this.tweened = this.getTweens()
+
+    setTimeout(() => {
+      this.$store.commit('transition', true)
+    }, 100)
+  },
+
+  beforeUpdate() {
+    this.showLoader = debounce(() => {
+      this.$store.commit('startWorking')
+    }, 100)
+
+    this.showLoader()
+  },
+
+  updated() {
+    if (this.$store.state.working) {
+      this.$store.commit('stopWorking')
+    }
+    this.showLoader.cancel()
   },
 
   methods: {
-    handleTransitionStart(event) {
-      if (event.target === this.grid) {
-        this.animateZoomFocus()
+    getTweens() {
+      return {
+        length: Object.keys(this.tiles).length,
+        scale: this.scale,
+        padding: this.padding(),
+        ...this.getScrollTo()
       }
     },
 
-    pane($event) {
-      throttle(() => {
-        const scrollBy = 100
+    getScrollTo() {
+      const padding = this.padding()
+      const gridTop = (this.zoomFocus.row - 1) * this.scale * 100
+      const gridLeft = (this.zoomFocus.col - 1) * this.scale * 100
 
-        let scrollTopBy = 0
-        let scrollLeftBy = 0
+      const scrollTop = gridTop + padding.y - this.container.clientHeight / 2
+      const scrollLeft = gridLeft + padding.x - this.container.clientWidth / 2
 
-        switch ($event.key) {
-          case 'w':
-            scrollTopBy = -scrollBy
-            break
-          case 'a':
-            scrollLeftBy = -scrollBy
-            break
-          case 's':
-            scrollTopBy = scrollBy
-            break
-          case 'd':
-            scrollLeftBy = scrollBy
-            break
-        }
-
-        this.container.scrollBy({
-          top: scrollTopBy,
-          left: scrollLeftBy,
-          behavior: 'smooth'
-        })
-      }, 200)()
+      return {
+        scrollTop: Math.max(0, scrollTop),
+        scrollLeft: Math.max(0, scrollLeft)
+      }
     },
 
-    centerZoomFocus() {
-      clearInterval(this.animateInterval)
+    padding(size) {
+      if (size === undefined) {
+        size = this.size
+      }
+      const {width, height} = size
+      const {clientWidth, clientHeight} = this.container
 
-      this.zoomFocus.scrollIntoView({
-        behavior: 'smooth',
-        block: 'center',
-        inline: 'center'
-      })
+      const singleTile = height === 1 && width === 1
+      const tileSize = this.scale * 100 + (singleTile ? 4 : 0)
+
+      return {
+        x: Math.floor(
+            Math.max((clientWidth - width * tileSize) / 2, 0)
+        ),
+        y: Math.floor(
+            Math.max((clientHeight - height * tileSize) / 2, 0)
+        ),
+      }
     },
 
-    animateZoomFocus() {
-      if (!this.animateInterval) {
-        this.animateInterval = setInterval(this.animateZoomFocus, 1)
+    animate() {
+      if (!this.$store.state.config.transition) {
+        this.tweened = {...this.getTweens()}
+        return
       }
 
-      const {scrollHeight, scrollWidth, clientHeight, clientWidth, scrollTop, scrollLeft} = this.container
-      const {top, left, width, height} = this.zoomFocus.getBoundingClientRect()
+      const terrain = this.$refs.terrain.$el
+      new TWEEN.Tween(this.tweened)
+          .to(this.getTweens(), 500)
+          .easing(TWEEN.Easing.Quadratic.Out)
+          .onUpdate(({scrollTop: top, scrollLeft: left}) => {
+            terrain.scroll({top, left})
+          })
+          .start()
 
-      const isTop = scrollTop - top < 0
-      const isBottom = scrollTop + clientHeight === scrollHeight
-      const isCenteredY = top === Math.floor((clientHeight - height) / 2)
+      this.nextFrame()
+    },
 
-      const isLeft = scrollLeft - left >= 0
-      const isRight = scrollLeft + clientWidth === scrollWidth
-      const isCenteredX = left === Math.floor((clientWidth - width) / 2)
+    animateFade() {
+      const terrain = this.$refs.terrain.$el
+      new TWEEN.Tween(this.tweened)
+          .to({
+            ...this.tweened,
+            length: 0
+          }, 1000)
+          .easing(TWEEN.Easing.Quadratic.InOut)
+          .onUpdate(({scrollTop: top, scrollLeft: left, length}) => {
+            terrain.scroll({top, left})
 
-      if ((isTop || isBottom || isCenteredY) && (isLeft || isRight || isCenteredX)) {
-        clearInterval(this.animateInterval)
-      } else {
-        this.zoomFocus.scrollIntoView({
-          block: 'center',
-          inline: 'center',
-        })
+            Object.values(this.tiles).slice(Math.ceil(length)).forEach(tile => {
+              this.$store.commit('tileTerrain', {...tile, terrain: 'blank'})
+            })
+          })
+          .onComplete(() => {
+            this.$store.dispatch('reset')
+          })
+          .start()
+
+      this.nextFrame()
+    },
+
+    nextFrame() {
+      if (TWEEN.update()) {
+        requestAnimationFrame(this.nextFrame)
       }
     }
   },
@@ -120,26 +180,59 @@ export default {
       return this.$store.state.working
     },
 
-    container() {
-      return this.$refs.terrain.$el
+    stylesToCSS() {
+      const {width: cols, height: rows} = this.size
+      const {padding, scale} = this.tweened
+      const tileSize = scale * 100
+
+      return {
+        container: {
+          paddingTop: `${padding.y}px`,
+          paddingLeft: `${padding.x}px`
+        },
+        grid: {
+          fontSize: `${scale * 50}px`,
+          gridTemplateRows: `repeat(${rows}, ${tileSize}px)`,
+          gridTemplateColumns: `repeat(${cols}, ${tileSize}px)`
+        },
+        zoomFocus: {
+          gridRow: this.zoomFocus.row,
+          gridColumn: this.zoomFocus.col
+        }
+      }
     },
 
-    grid() {
-      return this.$refs.terrain.$refs.grid.$el
-    },
+    ...mapState({
+      transition: state => state.config.transition,
 
-    zoomFocus() {
-      return this.$refs.terrain.$refs.zoomFocus
-    }
+      zoomFocus: state => state.config.zoomFocus,
+
+      tiles: state => state.tiles,
+
+      scale: state => state.config.scale,
+
+      container: state => state.container,
+    }),
+
+    ...mapGetters([
+      'size'
+    ])
   },
 
   watch: {
-    '$store.state.tiles'() {
-      this.animateZoomFocus()
+    zoomFocus() {
+      this.animate()
     },
 
-    '$store.state.config.zoomFocus'() {
-      this.centerZoomFocus()
+    tiles(newTiles, oldTiles) {
+      if (Object.keys(newTiles).length > Object.keys(oldTiles).length) {
+        this.tweened.padding = this.padding()
+        this.animate()
+      }
+    },
+
+    scale() {
+      this.animate()
     }
   }
 }
@@ -161,7 +254,7 @@ html, body {
 
 .transition {
   transition-duration: .5s;
-  transition-timing-function: ease-out;
+  transition-timing-function: ease-in-out;
 }
 
 #app {

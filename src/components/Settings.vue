@@ -65,12 +65,7 @@ export default {
     },
 
     reset() {
-      this.$store.commit('fade', true)
-
-      document.getElementsByClassName('tile')[0]
-          .addEventListener('transitionend', () => {
-            this.$store.dispatch('reset')
-          }, true)
+      this.$emit('reset')
     }
   },
 

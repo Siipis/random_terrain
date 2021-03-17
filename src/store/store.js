@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
+import container from "@/store/modules/container";
 import terrain from "@/store/modules/terrain";
 import randomizer from "@/store/modules/randomizer";
 
@@ -14,7 +15,7 @@ export default new Vuex.Store({
                 row: 1,
                 col: 1,
             },
-            fade: false
+            transition: false,
         },
         scales: [0.25, 0.5, 0.75, 1, 1.5, 2, 3],
         tiles: {
@@ -36,7 +37,7 @@ export default new Vuex.Store({
                 width: Math.abs(state.bounds.x.min) + Math.abs(state.bounds.x.max) + 1,
                 height: Math.abs(state.bounds.y.min) + Math.abs(state.bounds.y.max) + 1,
             }
-        },
+        }
     },
 
     actions: {
@@ -76,6 +77,7 @@ export default new Vuex.Store({
 
         reset({commit}) {
             commit('tiles', {})
+            commit('scale', 1)
             commit('bounds', {
                 x: {min: 0, max: 0},
                 y: {min: 0, max: 0}
@@ -86,13 +88,12 @@ export default new Vuex.Store({
             commit('addTile', {
                 x: 0, y: 0, terrain: null
             })
-            commit('fade', false)
         }
     },
 
     mutations: {
-        fade(state, fade) {
-            state.config.fade = fade
+        transition(state, transition) {
+            state.config.transition = transition
         },
 
         startWorking(state) {
@@ -149,6 +150,6 @@ export default new Vuex.Store({
     },
 
     modules: {
-        terrain, randomizer
+        container, terrain, randomizer
     }
 })
