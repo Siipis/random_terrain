@@ -149,6 +149,8 @@ export default {
 
   computed: {
     ...mapState({
+      scale: state => state.config.scale,
+
       transition: state => state.config.transition,
 
       tiles: state => state.tiles,
@@ -195,5 +197,10 @@ export default {
   position: absolute;
   z-index: 5;
   pointer-events: none;
+
+  & #zoom-focus {
+    width: 100%;
+    height: 100%;
+  }
 }
 </style>
