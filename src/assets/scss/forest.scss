@@ -27,6 +27,88 @@ $shallowBorder: 10px double rgba($shallowWater, .5);
   }
 }
 
+.meadow {
+  background: $grass;
+
+  &:before {
+    @include size(1);
+    opacity: 0.75;
+    background-image: url("data:image/svg+xml;utf8, <svg viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'><circle fill='yellow' cx='5' cy='5' r='2'/><circle fill='darkgreen' cx='5' cy='15' r='2'/><circle fill='pink' cx='10' cy='10' r='2.5'/><circle fill='yellow' cx='15' cy='15' r='2'/><circle fill='darkgreen' cx='15' cy='5' r='2'/></svg>"
+    );
+    background-size: 50%;
+    background-repeat: repeat;
+  }
+}
+
+.swamp {
+  $swamp: #6b6161;
+  $swampBorder: 0.25em double $grass;
+  background: $grass;
+
+  &:before {
+    @include size(1);
+    background-color: $swamp;
+    background-image: url("data:image/svg+xml;utf8, <svg viewBox='0 0 10 10' xmlns='http://www.w3.org/2000/svg'><line stroke='black' stroke-width='2' x1='0' x2='10' y1='5' y2='5'/></svg>");
+    background-clip: border-box;
+    background-size: .15em;
+    background-repeat: repeat;
+  }
+
+  &[class*="--top"]:not(.swamp--top) {
+    &:before {
+      border-top: $swampBorder;
+    }
+  }
+
+  &[class*="--bottom"]:not(.swamp--bottom) {
+    &:before {
+      border-bottom: $swampBorder;
+    }
+  }
+
+  &[class*="--left"]:not(.swamp--left) {
+    &:before {
+      border-left: $swampBorder;
+    }
+  }
+
+  &[class*="--right"]:not(.swamp--right) {
+    &:before {
+      border-right: $swampBorder;
+    }
+  }
+
+  &[class*="--top"]:not(.swamp--top) {
+    &[class*="--left"]:not(.swamp--left) {
+      &:before {
+        border-top-left-radius: 30%;
+      }
+    }
+
+    &[class*="--right"]:not(.swamp--right) {
+      &:before {
+        border-top-right-radius: 30%;
+      }
+    }
+  }
+
+  &[class*="--bottom"][class*="--left"] {
+    &:not(.swamp--bottom):not(.swamp--left) {
+      &:before {
+        border-bottom-left-radius: 30%;
+      }
+    }
+  }
+
+  &[class*="--bottom"][class*="--right"] {
+    &:not(.swamp--bottom):not(.swamp--right) {
+      &:before {
+        border-bottom-right-radius: 30%;
+      }
+    }
+  }
+}
+
 .rock {
   background: $grass;
 
