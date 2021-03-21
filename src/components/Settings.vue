@@ -8,6 +8,11 @@
           {{ option | capitalize }}
         </option>
       </select>
+
+      <button class="form--control__button" title="Edit terrain"
+              @click="$store.commit('editor', true)">
+        <pencil-icon/>
+      </button>
     </div>
 
     <div class="form--control">
@@ -42,6 +47,7 @@ import {mapState} from 'vuex'
 import ExpandIcon from 'vue-material-design-icons/CrosshairsGps';
 import RandomIcon from 'vue-material-design-icons/CameraControl';
 import ResetIcon from 'vue-material-design-icons/Close';
+import PencilIcon from 'vue-material-design-icons/Pencil';
 
 export default {
   name: "Settings",
@@ -49,6 +55,7 @@ export default {
   components: {
     ExpandIcon,
     RandomIcon,
+    PencilIcon,
     ResetIcon,
   },
 
@@ -94,6 +101,8 @@ export default {
 </script>
 
 <style scoped lang="scss">
+@import "../assets/scss/mixins";
+
 #settings {
   position: fixed;
   top: 10px;
@@ -108,14 +117,23 @@ export default {
   z-index: 100;
 }
 
-.form--control:not(:last-of-type) {
-  margin-bottom: 0.5em;
-  display: flex;
+.form--control {
+  &:not(:last-of-type) {
+    margin-bottom: 0.5em;
+    display: flex;
+  }
+
+  &__button {
+    flex: 1 1 2em;
+    padding: 4px 6px;
+    margin: 0;
+  }
 }
+
 
 label {
   font-weight: bold;
-  flex: 0 1 6em;
+  flex: 0 0 4em;
   display: block;
   padding: 4px 0;
   margin-right: 1em;
@@ -129,26 +147,6 @@ select, input {
 }
 
 button {
-  color: white;
-  font-family: inherit;
-  font-size: 14px;
-  background: #444;
-  border: 2px solid #333;
-  padding: 0.4em 1.2em 0.4em 1em;
-  border-radius: 5%;
-  margin: 0.5em 0;
-  transition: all 0.3s;
-
-  &:disabled {
-    background: #777;
-  }
-
-  &:not(:disabled):hover {
-    background: #111;
-  }
-
-  & + button {
-    margin-left: 0.25em;
-  }
+  @include button;
 }
 </style>

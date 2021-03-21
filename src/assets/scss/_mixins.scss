@@ -7,6 +7,48 @@
   box-sizing: border-box;
 }
 
+@mixin button($type: 'block') {
+  font-family: inherit;
+  font-size: 14px;
+  border: 2px solid #333;
+  padding: 0.4em 1.2em 0.4em 1em;
+  border-radius: 5%;
+  margin: 0.5em 0;
+  transition: all .2s ease-in;
+
+  & + button {
+    margin-left: 0.25em;
+  }
+
+  @if ($type == 'block') {
+    color: white;
+    background: #444;
+
+    &:not(:disabled):hover {
+      background: #111;
+    }
+
+    &:disabled {
+      background: #777;
+    }
+  } @else if ($type == 'outline') {
+    color: inherit;
+    background: transparent;
+
+    &:not(:disabled):hover {
+      color: #666;
+      background: transparent;
+      border-color: #999;
+    }
+
+    &:disabled {
+      border-color: #777;
+    }
+  } @else {
+    @error "Unknown button type #{$type}.";
+  }
+}
+
 @mixin water() {
   &:before {
     border: 0.3em double #c3b42e;

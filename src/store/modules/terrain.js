@@ -1,10 +1,10 @@
 import {terrains} from "@/terrains";
-
+import {cloneDeep} from 'lodash';
 
 export default {
     state: () => ({
         current: Object.keys(terrains)[0],
-        list: terrains,
+        list: cloneDeep(terrains),
     }),
 
     getters: {
@@ -55,5 +55,23 @@ export default {
         terrain(state, terrain) {
             state.current = terrain
         },
+
+        setTerrainValue(state, {active, type, value}) {
+            if (active === undefined || type === undefined || value === undefined) {
+                throw TypeError()
+            }
+            state.list[state.current][active][type] = value
+        },
+
+        resetTerrainValue(state, {active, type}) {
+            if (active === undefined || type === undefined) {
+                throw TypeError()
+            }
+            state.list[state.current][active][type] = terrains[state.current][active][type]
+        },
+
+        resetTerrainValues(state) {
+            state.list[state.current] = cloneDeep(terrains[state.current])
+        }
     }
 }

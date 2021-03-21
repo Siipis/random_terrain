@@ -7,14 +7,15 @@
 
       <transition-group name="grid" tag="div" ref="grid"
                         class="grid" :style="styles.grid">
-        <Tile v-for="tile in tiles" :tile="tile" :key="tile.key" class="tile"/>
+        <Tile v-for="tile in tiles" :tile="tile" :key="tile.key"
+              class="tile" :title="tile.terrain|startCase"/>
       </transition-group>
     </div>
   </div>
 </template>
 
 <script>
-import {throttle} from 'lodash'
+import {throttle, startCase} from 'lodash'
 import Tile from "@/components/Tile";
 import {mapState, mapGetters} from "vuex";
 
@@ -55,6 +56,12 @@ export default {
     window.addEventListener('resize', this.syncContainer, {passive: true})
   },
 
+  filters: {
+    startCase(string) {
+      return startCase(string)
+    }
+  },
+
   methods: {
     handleZoom($event) {
       const {width, height} = this.size
@@ -84,7 +91,14 @@ export default {
 
     handleExpand() {
       const {width, height} = this.size
-      const {scrollHeight, scrollWidth, clientHeight, clientWidth, scrollTop, scrollLeft} = document.getElementById('terrain--container')
+      const {
+        scrollHeight,
+        scrollWidth,
+        clientHeight,
+        clientWidth,
+        scrollTop,
+        scrollLeft
+      } = document.getElementById('terrain--container')
 
       const isScrolledTop = scrollTop === 0
       const isScrolledBottom = scrollTop + clientHeight === scrollHeight

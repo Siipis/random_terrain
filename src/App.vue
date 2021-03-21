@@ -8,6 +8,10 @@
       </div>
     </transition>
 
+    <transition name="fade">
+      <TerrainConfig v-if="$store.state.config.editor" />
+    </transition>
+
     <Settings v-on:reset="animateFade"/>
     <Terrain ref="terrain" :styles="stylesToCSS"/>
   </div>
@@ -22,10 +26,12 @@ import TWEEN from "@tweenjs/tween.js"
 import Terrain from "@/components/Terrain";
 import Settings from "@/components/Settings";
 import LoadingIcon from 'vue-material-design-icons/Refresh'
+import TerrainConfig from "@/components/TerrainConfig";
 
 export default {
   name: 'App',
   components: {
+    TerrainConfig,
     Settings,
     Terrain,
     LoadingIcon,

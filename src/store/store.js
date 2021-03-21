@@ -16,6 +16,7 @@ export default new Vuex.Store({
                 col: 1,
             },
             transition: false,
+            editor: false,
         },
         scales: [0.25, 0.5, 0.75, 1, 1.5, 2, 3],
         tiles: {
@@ -94,6 +95,10 @@ export default new Vuex.Store({
     mutations: {
         transition(state, transition) {
             state.config.transition = transition
+        },
+
+        editor(state, editor) {
+            state.config.editor = editor
         },
 
         startWorking(state) {
