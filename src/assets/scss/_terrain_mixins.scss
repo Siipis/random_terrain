@@ -1,0 +1,109 @@
+@mixin smoothBorder($class, $border-radius: 100%) {
+  &:before, &:after {
+    border-radius: $border-radius;
+  }
+
+  &:not([class*="--left"]), &[class*="#{$class}--left"] {
+    &:before, &:after {
+      border-left: 0;
+      border-top-left-radius: 0;
+      border-bottom-left-radius: 0;
+    }
+  }
+
+  &:not([class*="--right"]), &[class*="#{$class}--right"] {
+    &:before, &:after {
+      border-right: 0;
+      border-top-right-radius: 0;
+      border-bottom-right-radius: 0;
+    }
+  }
+
+  &:not([class*="--top"]), &[class*="#{$class}--top"] {
+    &:before, &:after {
+      border-top: 0;
+      border-top-left-radius: 0;
+      border-top-right-radius: 0;
+    }
+  }
+
+  &:not([class*="--bottom"]), &[class*="#{$class}--bottom"] {
+    &:before, &:after {
+      border-bottom: 0;
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
+    }
+  }
+}
+
+@mixin borderWith($class, $border: 0) {
+  &.#{$class}--top {
+    &:before, &:after {
+      border-top: $border;
+      border-top-left-radius: 0;
+      border-top-right-radius: 0;
+    }
+  }
+
+  &.#{$class}--bottom {
+    &:before, &:after {
+      border-bottom: $border;
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
+    }
+  }
+
+  &.#{$class}--left {
+    &:before, &:after {
+      border-left: $border;
+      border-top-left-radius: 0;
+      border-bottom-left-radius: 0;
+    }
+  }
+
+  &.#{$class}--right {
+    &:before, &:after {
+      border-right: $border;
+      border-top-right-radius: 0;
+      border-bottom-right-radius: 0;
+    }
+  }
+}
+
+@mixin shiftInto($class, $other, $own, $border-radius: 100%) {
+  &.#{$class}--top {
+    &.#{$class}--left {
+      background: $other;
+
+      &:before, &:after {
+        border-top-left-radius: $border-radius;
+      }
+    }
+
+    &.#{$class}--right {
+      background: $other;
+
+      &:before, &:after {
+        border-top-right-radius: $border-radius;
+      }
+    }
+  }
+
+  &.#{$class}--bottom {
+    &.#{$class}--left {
+      background: $other;
+
+      &:before, &:after {
+        border-bottom-left-radius: $border-radius;
+      }
+    }
+
+    &.#{$class}--right {
+      background: $other;
+
+      &:before, &:after {
+        border-bottom-right-radius: $border-radius;
+      }
+    }
+  }
+}

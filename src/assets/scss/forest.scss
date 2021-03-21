@@ -1,9 +1,19 @@
 @import "mixins";
+@import "terrain_mixins";
+
+@mixin swampBackground($color: 'darkgreen') {
+  background-image: url("data:image/svg+xml;utf8, <svg viewBox='0 0 10 10' xmlns='http://www.w3.org/2000/svg'><line stroke='#{$color}' stroke-width='2' x1='0' x2='10' y1='5' y2='5'/></svg>");
+  background-size: .18em;
+  background-repeat: repeat;
+}
 
 $grass: #6ab336;
 $shallowWater: #67e3ee;
 $deepWater: #41cbe1;
-$shallowBorder: 10px double rgba($shallowWater, .5);
+$shallowBorder: .25em double rgba($shallowWater, .5);
+$shoreBorder: .25em double #c3b42e;
+$swamp: #178a73;
+$swampBorder: .25em double rgba($swamp, .5);
 
 .trees {
   background: $grass;
@@ -41,70 +51,52 @@ $shallowBorder: 10px double rgba($shallowWater, .5);
 }
 
 .swamp {
-  $swamp: #6b6161;
-  $swampBorder: 0.25em double $grass;
+  @include smoothBorder('swamp', 30%);
+  @include borderWith('shallowWater', $shallowBorder);
+  @include borderWith('deepWater', $shallowBorder);
+  @include shiftInto('shallowWater', $other: $shallowWater, $own: $swamp, $border-radius: 30%);
   background: $grass;
+  position: relative;
 
   &:before {
     @include size(1);
-    background-color: $swamp;
-    background-image: url("data:image/svg+xml;utf8, <svg viewBox='0 0 10 10' xmlns='http://www.w3.org/2000/svg'><line stroke='black' stroke-width='2' x1='0' x2='10' y1='5' y2='5'/></svg>");
-    background-clip: border-box;
-    background-size: .15em;
-    background-repeat: repeat;
+    @include swampBackground;
+    background-clip: content-box;
+    border: 0.25em double $grass;
+    position: relative;
+    z-index: 2;
   }
 
-  &[class*="--top"]:not(.swamp--top) {
-    &:before {
-      border-top: $swampBorder;
+  &:after {
+    @include size(1);
+    position: absolute;
+    top: 0;
+    left: 0;
+    background: $swamp;
+    z-index: 1;
+  }
+
+  &[class*="Water--top"][class*="Water--left"] {
+    &:not([class*="Water--bottom"]):not([class*="Water--right"]) {
+      background: linear-gradient(to bottom right, $shallowWater 50%, $grass 50%);
     }
   }
 
-  &[class*="--bottom"]:not(.swamp--bottom) {
-    &:before {
-      border-bottom: $swampBorder;
+  &[class*="Water--top"][class*="Water--right"] {
+    &:not([class*="Water--bottom"]):not([class*="Water--left"]) {
+      background: linear-gradient(to bottom left, $shallowWater 50%, $grass 50%);
     }
   }
 
-  &[class*="--left"]:not(.swamp--left) {
-    &:before {
-      border-left: $swampBorder;
+  &[class*="Water--bottom"][class*="Water--left"] {
+    &:not([class*="Water--top"]):not([class*="Water--right"]) {
+      background: linear-gradient(to top right, $shallowWater 50%, $grass 50%);
     }
   }
 
-  &[class*="--right"]:not(.swamp--right) {
-    &:before {
-      border-right: $swampBorder;
-    }
-  }
-
-  &[class*="--top"]:not(.swamp--top) {
-    &[class*="--left"]:not(.swamp--left) {
-      &:before {
-        border-top-left-radius: 30%;
-      }
-    }
-
-    &[class*="--right"]:not(.swamp--right) {
-      &:before {
-        border-top-right-radius: 30%;
-      }
-    }
-  }
-
-  &[class*="--bottom"][class*="--left"] {
-    &:not(.swamp--bottom):not(.swamp--left) {
-      &:before {
-        border-bottom-left-radius: 30%;
-      }
-    }
-  }
-
-  &[class*="--bottom"][class*="--right"] {
-    &:not(.swamp--bottom):not(.swamp--right) {
-      &:before {
-        border-bottom-right-radius: 30%;
-      }
+  &[class*="Water--bottom"][class*="Water--right"] {
+    &:not([class*="Water--top"]):not([class*="Water--left"]) {
+      background: linear-gradient(to top left, $shallowWater 50%, $grass 50%);
     }
   }
 }
@@ -334,16 +326,18 @@ $shallowBorder: 10px double rgba($shallowWater, .5);
 }
 
 .shallowWater {
-  @include water;
+  @include smoothBorder('Water');
+  @include borderWith('swamp', 0);
   background: $grass;
 
   &:before {
     @include size(1);
+    border: $shoreBorder;
     background: $shallowWater;
   }
 
   &[class*="--top"][class*="--bottom"][class*="--left"][class*="--right"] {
-    &:not([class*="Water--"]) {
+    &:not([class*="Water--"]):not([class*="swamp--"]) {
       &:before {
         background: #1ba085;
         border: 0.25em double $grass;
@@ -354,83 +348,39 @@ $shallowBorder: 10px double rgba($shallowWater, .5);
 }
 
 .deepWater {
-  @include water;
+  @include smoothBorder('Water');
+  @include borderWith('shallowWater', $shallowBorder);
+  @include shiftInto('shallowWater', $other: $shallowWater, $own: $deepWater);
+  @include borderWith('swamp', 0);
   background: $grass;
 
   &:before {
     @include size(1);
+    border: $shoreBorder;
     background: $deepWater;
   }
 
-  &.shallowWater--top {
-    &:before {
-      border-top: $shallowBorder !important;
-    }
-  }
-
-  &.shallowWater--bottom {
-    &:before {
-      border-bottom: $shallowBorder !important;
-    }
-  }
-
-  &.shallowWater--left {
-    &:before {
-      border-left: $shallowBorder !important;
-    }
-  }
-
-  &.shallowWater--right {
-    &:before {
-      border-right: $shallowBorder !important;
-    }
-  }
-
   &.shallowWater--top.shallowWater--left {
-    background: $shallowWater;
-
     &:not([class*="Water--bottom"]):not([class*="Water--right"]) {
       background: linear-gradient(to bottom right, $shallowWater 50%, $grass 50%);
-    }
-
-    &:before {
-      border-top-left-radius: 100%;
     }
   }
 
   &.shallowWater--top.shallowWater--right {
-    background: $shallowWater;
-
     &:not([class*="Water--bottom"]):not([class*="Water--left"]) {
       background: linear-gradient(to bottom left, $shallowWater 50%, $grass 50%);
-    }
-
-    &:before {
-      border-top-right-radius: 100%;
     }
   }
 
   &.shallowWater--bottom.shallowWater--left {
-    background: $shallowWater;
-
     &:not([class*="Water--top"]):not([class*="Water--right"]) {
       background: linear-gradient(to top right, $shallowWater 50%, $grass 50%);
-    }
-
-    &:before {
-      border-bottom-left-radius: 100%;
     }
   }
 
   &.shallowWater--bottom.shallowWater--right {
-    background: $shallowWater;
-
     &:not([class*="Water--top"]):not([class*="Water--left"]) {
       background: linear-gradient(to top left, $shallowWater 50%, $grass 50%);
-    }
-
-    &:before {
-      border-bottom-right-radius: 100%;
     }
   }
 }
